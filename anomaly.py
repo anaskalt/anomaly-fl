@@ -104,7 +104,7 @@ def test(net: Net, testloader: DataLoader, device: torch.device) -> Tuple[float,
 
 def main():
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    csv_path = './data/Training_data.csv'
+    csv_path = './data/cell_data.csv'
 
     print("Centralized PyTorch training")
     print("Load data")

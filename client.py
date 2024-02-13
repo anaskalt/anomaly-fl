@@ -82,7 +82,7 @@ def main() -> None:
     parser.add_argument("--node-id", type=int, required=True, choices=range(0, 4))
     args = parser.parse_args()
 
-    csv_path = './data/Training_data.csv'
+    csv_path = './data/cell_data.csv'
 
     # Load data
     trainloader, testloader = anomaly.load_data(csv_path=csv_path, which_cell=args.node_id)
