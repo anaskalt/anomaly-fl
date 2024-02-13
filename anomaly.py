@@ -63,7 +63,26 @@ def load_data(csv_path: str, which_cell: int = 0, window_len: int = 96) -> tuple
 
     return train_loader, test_loader
 
-def train(net: Net, trainloader: DataLoader, epochs: int, device: torch.device) -> None:
+def train(net: Net, trainloader: DataLoader, epochs: int, device: torch.device) -> float:
+    criterion = nn.BCELoss()
+    optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
+    net.to(device)
+    net.train()
+    
+    total_loss = 0
+    for epoch in range(epochs):
+        for inputs, labels in trainloader:
+            inputs, labels = inputs.to(device), labels.to(device).unsqueeze(1)
+            optimizer.zero_grad()
+            outputs = net(inputs)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            total_loss += loss.item()
+    average_loss = total_loss / (len(trainloader.dataset) * epochs)
+    return average_loss
+
+'''def train(net: Net, trainloader: DataLoader, epochs: int, device: torch.device) -> None:
     criterion = nn.BCELoss()
     optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
     print(f"Training {epochs} epoch(s) w/ {len(trainloader)} batches each")
@@ -81,9 +100,9 @@ def train(net: Net, trainloader: DataLoader, epochs: int, device: torch.device) 
             loss.backward()
             optimizer.step()
 
-        print(f'Epoch {epoch+1}, Loss: {loss.item()}')
+        print(f'Epoch {epoch+1}, Loss: {loss.item()}')'''
 
-def test(net: Net, testloader: DataLoader, device: torch.device) -> Tuple[float, float]:
+'''def test(net: Net, testloader: DataLoader, device: torch.device) -> Tuple[float, float]:
     criterion = nn.BCELoss()
     net.eval()
     test_loss, correct, total = 0.0, 0, 0
@@ -100,6 +119,24 @@ def test(net: Net, testloader: DataLoader, device: torch.device) -> Tuple[float,
 
     accuracy = correct / total
     average_loss = test_loss / len(testloader)
+    return average_loss, accuracy'''
+
+def test(net: Net, testloader: DataLoader, device: torch.device) -> Tuple[float, float]:
+    criterion = nn.BCELoss()
+    net.eval()
+    
+    total_loss, correct, total = 0.0, 0, 0
+    with torch.no_grad():
+        for inputs, labels in testloader:
+            inputs, labels = inputs.to(device), labels.to(device).unsqueeze(1)
+            outputs = net(inputs)
+            loss = criterion(outputs, labels)
+            total_loss += loss.item()
+            predicted = (outputs > 0.5).float()
+            correct += (predicted == labels).sum().item()
+            total += labels.size(0)
+    average_loss = total_loss / len(testloader.dataset)
+    accuracy = correct / total
     return average_loss, accuracy
 
 def main():

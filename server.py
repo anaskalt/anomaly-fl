@@ -1,10 +1,16 @@
 """Flower server example."""
 
+#import matplotlib.pyplot as plt
 
-from typing import List, Tuple
-
+from typing import List, Tuple, Optional, Dict, Union
 import flwr as fl
-from flwr.common import Metrics
+import numpy as np
+
+from flwr.server.client_proxy import ClientProxy
+from flwr.common import EvaluateRes, FitRes, Scalar, Metrics
+
+NUM_OF_CLIENTS = 5
+NUM_ROUNDS = 10
 
 
 # Define metric aggregation function
@@ -16,9 +22,14 @@ def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
     # Aggregate and return custom metric (weighted average)
     return {"accuracy": sum(accuracies) / sum(examples)}
 
-
-# Define strategy
-strategy = fl.server.strategy.FedAvg(evaluate_metrics_aggregation_fn=weighted_average)
+strategy = fl.server.strategy.FedAvg(
+    evaluate_metrics_aggregation_fn=weighted_average,
+    fraction_evaluate=1.0, # 100% of clients participate in the evaluation
+    fraction_fit=1.0, # 100% of clients participate in the training
+    min_fit_clients=NUM_OF_CLIENTS, # Minimum of 5 clients for training
+    min_evaluate_clients=NUM_OF_CLIENTS, # Minimum of 5 clients for evaluation
+    min_available_clients=NUM_OF_CLIENTS, # Minimum of 5 clients to start training
+)
 
 # Start Flower server
 fl.server.start_server(

@@ -2,3 +2,5 @@ flwr>=1.0, <2.0
 torch
 torchvision
 scikit-learn
+matplotlib
+pandas
